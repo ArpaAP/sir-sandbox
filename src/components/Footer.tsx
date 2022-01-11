@@ -20,7 +20,6 @@ const Footer: React.FC = () => {
             >
               2021 호산고 윈터스쿨 주제탐구 프로젝트
             </p>
-            <p>1학년 8반 12번 황부연</p>
           </Col>
           <Col xs={7} className="d-flex text-right">
             <Button
