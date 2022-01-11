@@ -41,7 +41,7 @@ const Footer: React.FC = () => {
             </Button>
           </Col>
         </Row>
-        <div className="text-center">Copyright © 2022</div>
+        <div className="text-center">Copyright © 2022 ArpaAP All rights reserved.</div>
       </Container>
     </footer>
   );
