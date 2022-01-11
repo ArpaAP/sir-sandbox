@@ -1,22 +1,58 @@
-import React from "react";
+import React, { useState } from "react";
 import { Container, Row, Col, Form, Card, ProgressBar } from "react-bootstrap";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Line } from "react-chartjs-2";
 import Footer from "./components/Footer";
 import Navibar from "./components/Navibar";
 
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
 const App: React.FC = () => {
-  const [darkmode, setDarkmode] = React.useState(
+  const [darkmode, setDarkmode] = useState(
     localStorage.getItem("darkmode") === "true"
   );
 
-  const [S, setS] = React.useState(0);
-  const [I, setI] = React.useState(0);
-  const [R, setR] = React.useState(0);
-  const [beta, setBeta] = React.useState(0.07);
-  const [gamma, setGamma] = React.useState(0.07);
+  const [S, setS] = useState(0);
+  const [I, setI] = useState(0);
+  const [R, setR] = useState(0);
+  const [beta, setBeta] = useState(0.21);
+  const [gamma, setGamma] = useState(0.07);
+  const [ra, setRa] = useState(0.5);
+  const [loop, setLoop] = useState(1000);
 
   const s = S / (S + I + R) || 0;
   const i = I / (S + I + R) || 0;
   const r = R / (S + I + R) || 0;
+
+  const datas = [[s, i, r]];
+
+  for (let i = 0; i < loop; i++) {
+    const dS = beta * datas[i][0] * datas[i][1];
+    const dR = gamma * datas[i][1];
+
+    const s_ = datas[i][0] - dS * ra;
+    const i_ = datas[i][1] + (dS - dR) * ra;
+    const r_ = datas[i][2] + dR * ra;
+
+    datas.push([s_, i_, r_]);
+  }
 
   return (
     <div
@@ -28,6 +64,10 @@ const App: React.FC = () => {
     >
       <Navibar />
       <Container fluid className="h-100">
+        <Row className="mt-3 text-center">
+          <h3 className="m-0 fw-bold">전염병 확산 예측 모델 모의실험</h3>
+        </Row>
+        <hr />
         <Row>
           <Col xs={12} md={6} lg={5} xl={4} xxl={3}>
             <Card
@@ -132,7 +172,7 @@ const App: React.FC = () => {
                     <Col sm={3} className="ms-auto">
                       <Form.Control
                         type="number"
-                        step="0.1"
+                        step="0.01"
                         value={beta}
                         onChange={(e) =>
                           setBeta(Math.max(Number(e.target.value), 0))
@@ -222,7 +262,146 @@ const App: React.FC = () => {
               </Card.Body>
             </Card>
           </Col>
-          <Col className="d-none d-lg-block" />
+          <Col className="d-none d-lg-block">
+            <Line
+              options={{
+                elements: {
+                  point: {
+                    radius: 0,
+                  },
+                  line: {
+                    tension: 1,
+                  },
+                },
+                scales: {
+                  x: {
+                    ticks: {
+                      autoSkip: true,
+                      maxTicksLimit: 24,
+                    },
+                  },
+                },
+                onClick: (event, activeElements, chart) => {
+                  console.log(activeElements[0].index / 2);
+                },
+              }}
+              data={{
+                labels: Array.from(
+                  { length: datas.length },
+                  (_, i) => Math.round(i * ra * 100) / 100
+                ),
+                datasets: [
+                  {
+                    label: "취약군",
+                    data: datas.map((d) => d[0]),
+                    backgroundColor: "rgba(255, 159, 64, 0.2)",
+                    borderColor: "rgba(255, 159, 64, 1)",
+                    borderWidth: 5,
+                    fill: false,
+                  },
+                  {
+                    label: "감염군",
+                    data: datas.map((d) => d[1]),
+                    backgroundColor: "rgba(255, 99, 132, 0.2)",
+                    borderColor: "rgba(255, 99, 132, 1)",
+                    borderWidth: 5,
+                    fill: false,
+                  },
+                  {
+                    label: "회복군",
+                    data: datas.map((d) => d[2]),
+                    backgroundColor: "rgba(75, 192, 192, 0.2)",
+                    borderColor: "rgba(75, 192, 192, 1)",
+                    borderWidth: 5,
+                    fill: false,
+                  },
+                ],
+              }}
+            />
+
+            <Card
+              bg={darkmode ? "dark" : "white"}
+              text={darkmode ? "white" : "dark"}
+              className="shadow-sm my-3"
+            >
+              <Card.Header as="h5">시뮬레이션 설정 | Settings</Card.Header>
+              <Card.Body className="pt-3 pb-0">
+                <Form className="d-flex">
+                  <Col xs={6}>
+                    <Form.Group as={Row} className="mb-3 h-100">
+                      <Col sm={8}>
+                        <Form.Label
+                          className="fw-bold"
+                          style={{ fontSize: 18 }}
+                        >
+                          시간 간격 (
+                          <b>
+                            <i>r </i>
+                          </b>
+                          )
+                        </Form.Label>
+                        <div>
+                          <Form.Text>
+                            얼마나 정밀하게 계산을 진행할지를 결정합니다. 간격이
+                            너무 좁으면 랙을 유발할 수 있습니다.
+                          </Form.Text>
+                        </div>
+                      </Col>
+                      <Col
+                        sm={4}
+                        className="ms-auto d-flex align-items-center h-100"
+                      >
+                        <Form.Control
+                          className="me-4"
+                          type="number"
+                          step="0.05"
+                          value={ra}
+                          onChange={(e) =>
+                            setRa(Math.max(Number(e.target.value), 0))
+                          }
+                        />
+                      </Col>
+                    </Form.Group>
+                  </Col>
+                  <Col xs={6}>
+                    <Form.Group as={Row} className="mb-3 h-100">
+                      <Col sm={8}>
+                        <Form.Label
+                          className="fw-bold"
+                          style={{ fontSize: 18 }}
+                        >
+                          반복 횟수 (
+                          <b>
+                            <i>l </i>
+                          </b>
+                          )
+                        </Form.Label>
+                        <div>
+                          <Form.Text>
+                            얼마나 미래까지 시뮬레이션을 진행할지를 결정합니다.
+                          </Form.Text>
+                        </div>
+                      </Col>
+                      <Col
+                        sm={4}
+                        className="ms-auto d-flex align-items-center h-100"
+                      >
+                        <Form.Control
+                          className="me-2"
+                          type="number"
+                          step="1"
+                          value={loop}
+                          onChange={(e) =>
+                            setLoop(Math.max(Number(e.target.value), 0))
+                          }
+                        />회
+                      </Col>
+                    </Form.Group>
+                  </Col>
+                </Form>
+              </Card.Body>
+            </Card>
+          </Col>
           <Col xs={12} md={6} lg={5} xl={4} xxl={3}>
             <Card
               bg={darkmode ? "dark" : "white"}
