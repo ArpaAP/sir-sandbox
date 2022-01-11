@@ -262,7 +262,7 @@ const App: React.FC = () => {
               </Card.Body>
             </Card>
           </Col>
-          <Col className="d-none d-lg-block">
+          <Col>
             <Line
               options={{
                 elements: {
