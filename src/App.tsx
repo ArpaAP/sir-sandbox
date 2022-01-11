@@ -29,8 +29,8 @@ const App: React.FC = () => {
     localStorage.getItem("darkmode") === "true"
   );
 
-  const [S, setS] = useState(0);
-  const [I, setI] = useState(0);
+  const [S, setS] = useState(500);
+  const [I, setI] = useState(20);
   const [R, setR] = useState(0);
   const [beta, setBeta] = useState(0.21);
   const [gamma, setGamma] = useState(0.07);
@@ -58,8 +58,9 @@ const App: React.FC = () => {
     <div
       style={{
         minHeight: "95vh",
-        backgroundColor: darkmode ? "#333" : undefined,
+        backgroundColor: darkmode ? "#171a1f" : undefined,
         fontFamily: "NanumSquare",
+        color: darkmode ? "white" : undefined,
       }}
     >
       <Navibar />
@@ -69,7 +70,7 @@ const App: React.FC = () => {
         </Row>
         <hr />
         <Row>
-          <Col xs={12} md={6} lg={5} xl={4} xxl={3}>
+          <Col xs={12} md={6} xxl={3}>
             <Card
               bg={darkmode ? "dark" : "white"}
               text={darkmode ? "white" : "dark"}
@@ -262,7 +263,11 @@ const App: React.FC = () => {
               </Card.Body>
             </Card>
           </Col>
-          <Col>
+          <Col
+            xs={12}
+            md={{ span: 12, order: "first" }}
+            xxl={{ span: 6, order: 0 }}
+          >
             <Line
               options={{
                 elements: {
@@ -326,9 +331,9 @@ const App: React.FC = () => {
             >
               <Card.Header as="h5">시뮬레이션 설정 | Settings</Card.Header>
               <Card.Body className="pt-3 pb-0">
-                <Form className="d-flex">
-                  <Col xs={6}>
-                    <Form.Group as={Row} className="mb-3 h-100">
+                <Form as={Row} className="d-flex">
+                  <Col xl={6}>
+                    <Form.Group as={Row} className="mb-3">
                       <Col sm={8}>
                         <Form.Label
                           className="fw-bold"
@@ -363,8 +368,8 @@ const App: React.FC = () => {
                       </Col>
                     </Form.Group>
                   </Col>
-                  <Col xs={6}>
-                    <Form.Group as={Row} className="mb-3 h-100">
+                  <Col xl={6}>
+                    <Form.Group as={Row} className="mb-3">
                       <Col sm={8}>
                         <Form.Label
                           className="fw-bold"
@@ -394,7 +399,8 @@ const App: React.FC = () => {
                           onChange={(e) =>
                             setLoop(Math.max(Number(e.target.value), 0))
                           }
-                        />회
+                        />
+                        회
                       </Col>
                     </Form.Group>
                   </Col>
@@ -402,7 +408,7 @@ const App: React.FC = () => {
               </Card.Body>
             </Card>
           </Col>
-          <Col xs={12} md={6} lg={5} xl={4} xxl={3}>
+          <Col xs={12} md={6} xxl={3}>
             <Card
               bg={darkmode ? "dark" : "white"}
               text={darkmode ? "white" : "dark"}
