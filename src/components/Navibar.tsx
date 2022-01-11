@@ -19,7 +19,10 @@ const Navibar: React.FC = () => {
               </NavDropdown.Item>
               <NavDropdown.Divider />
               <NavDropdown.Item disabled>
-                제작 - 2021 호산고등학교 1학년 8반 12번 황부연
+                2021 호산고등학교 윈터스쿨 주제탐구 프로젝트
+              </NavDropdown.Item>
+              <NavDropdown.Item disabled>
+                제작 ArpaAP
               </NavDropdown.Item>
             </NavDropdown>
           </Nav>

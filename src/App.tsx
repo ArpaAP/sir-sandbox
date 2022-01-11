@@ -57,14 +57,14 @@ const App: React.FC = () => {
   return (
     <div
       style={{
-        minHeight: "95vh",
+        position: "relative",
         backgroundColor: darkmode ? "#171a1f" : undefined,
         fontFamily: "NanumSquare",
         color: darkmode ? "white" : undefined,
       }}
     >
       <Navibar />
-      <Container fluid className="h-100">
+      <Container fluid style={{ minHeight: "95vh" }}>
         <Row className="mt-3 text-center">
           <h3 className="m-0 fw-bold">전염병 확산 예측 모델 모의실험</h3>
         </Row>

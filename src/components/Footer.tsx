@@ -7,7 +7,14 @@ const Footer: React.FC = () => {
   );
 
   return (
-    <footer className="bg-dark text-white">
+    <footer
+      className="bg-dark text-white"
+      style={{
+        position: "absolute",
+        bottom: 0,
+        width: "100%",
+      }}
+    >
       <Container fluid="sm" className="text-center text-md-start py-4">
         <Row>
           <Col xs={5} className="mt-md-0 mt-3">
