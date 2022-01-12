@@ -2,8 +2,6 @@ import React from "react";
 import { Container, Col, Row, Button } from "react-bootstrap";
 
 const Footer: React.FC = () => {
-  const darkmode = localStorage.getItem("darkmode") === "true";
-
   return (
     <footer className="bg-dark text-white">
       <Container fluid="sm" className="text-center text-md-start py-4">
@@ -18,18 +16,6 @@ const Footer: React.FC = () => {
             >
               2021 호산고 윈터스쿨 주제탐구 프로젝트
             </p>
-          </Col>
-          <Col xs={7} className="d-flex text-right">
-            <Button
-              className="ms-auto my-auto"
-              variant="outline-light"
-              onClick={() => {
-                localStorage.setItem("darkmode", (!darkmode).toString());
-                window.location.reload();
-              }}
-            >
-              {darkmode ? "다크모드 끄기" : "다크모드 켜기"}
-            </Button>
           </Col>
         </Row>
         <div className="text-center">

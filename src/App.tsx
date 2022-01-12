@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Container, Row, Col, Form, Card, ProgressBar } from "react-bootstrap";
 import {
   Chart as ChartJS,
@@ -58,9 +58,25 @@ ChartJS.register(
 );
 
 const App: React.FC = () => {
-  const darkmode = localStorage.getItem("darkmode") === "true";
-
   const [XIndex, setXIndex] = useState(0);
+  const [darkmode, setDarkmode] = useState(
+    window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+  );
+
+  useEffect(() => {
+    const colorChangeListener = (e: MediaQueryListEvent) => {
+      setDarkmode(!!e.matches);
+    };
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", colorChangeListener);
+
+    return () =>
+      window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .removeEventListener("change", colorChangeListener);
+  }, []);
 
   const throttledHover = useMemo(
     () =>
