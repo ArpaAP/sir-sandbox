@@ -65,10 +65,10 @@ const App: React.FC = () => {
   const throttledHover = useMemo(
     () =>
       throttle((event, elements, chart) => {
-        console.log("asdf");
         let activePoint = chart.tooltip?.getActiveElements()[0];
         let x = (activePoint?.index ?? 0) / 2;
         setXIndex(x);
+        console.log(x);
       }, 240),
     []
   );
@@ -78,8 +78,8 @@ const App: React.FC = () => {
   const [R, setR] = useState(0);
   const [beta, setBeta] = useState(0.21);
   const [gamma, setGamma] = useState(0.07);
-  const [ra, setRa] = useState(0.5);
-  const [loop, setLoop] = useState(1000);
+  const [ra, setRa] = useState(2.5);
+  const [loop, setLoop] = useState(150);
 
   const s = S / (S + I + R) || 0;
   const i = I / (S + I + R) || 0;
@@ -225,7 +225,7 @@ const App: React.FC = () => {
                       <Form.Control
                         type="number"
                         step="0.01"
-                        value={beta}
+                        value={beta.toString()}
                         onChange={(e) =>
                           setBeta(Math.max(Number(e.target.value), 0))
                         }
@@ -252,7 +252,7 @@ const App: React.FC = () => {
                       <Form.Control
                         type="number"
                         step="0.1"
-                        value={gamma}
+                        value={gamma.toString()}
                         onChange={(e) =>
                           setGamma(Math.max(Number(e.target.value), 0))
                         }
@@ -412,8 +412,9 @@ const App: React.FC = () => {
                         </Form.Label>
                         <div>
                           <Form.Text>
-                            얼마나 정밀하게 계산을 진행할지를 결정합니다. 간격이
-                            너무 좁으면 랙을 유발할 수 있습니다.
+                            얼마나 정밀하게 계산을 진행할지를 결정합니다 (값이
+                            낮을수록 정밀한 간격). 간격이 너무 좁으면 랙을
+                            유발할 수 있습니다.
                           </Form.Text>
                         </div>
                       </Col>
@@ -425,7 +426,7 @@ const App: React.FC = () => {
                           className="me-4"
                           type="number"
                           step="0.05"
-                          value={ra}
+                          value={ra.toString()}
                           onChange={(e) =>
                             setRa(Math.max(Number(e.target.value), 0))
                           }
@@ -455,8 +456,9 @@ const App: React.FC = () => {
                         <Form.Control
                           className="me-2"
                           type="number"
-                          step="1"
-                          value={loop}
+                          step="5"
+                          max="1000"
+                          value={loop.toString()}
                           onChange={(e) =>
                             setLoop(Math.max(Number(e.target.value), 0))
                           }
@@ -481,8 +483,8 @@ const App: React.FC = () => {
                   <h6>현재 시간 (t)</h6>
                   <Form.Group className="mb-3">
                     <ProgressBar
-                      now={XIndex}
-                      label={XIndex}
+                      now={XIndex * ra * 2}
+                      label={XIndex * ra * 2}
                       max={ra * loop}
                       animated
                       variant="secondary"
