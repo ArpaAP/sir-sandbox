@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Container, Row, Col, Form, Card, ProgressBar } from "react-bootstrap";
 import {
   Chart as ChartJS,
@@ -13,6 +13,7 @@ import {
 import { Line } from "react-chartjs-2";
 import Footer from "./components/Footer";
 import Navibar from "./components/Navibar";
+import { throttle } from "lodash";
 
 ChartJS.register(
   CategoryScale,
@@ -21,12 +22,55 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  {
+    id: "LineWithLine",
+    afterDatasetsDraw: (chart) => {
+      let chart_type = chart.config.type;
+      if (
+        chart.tooltip?.getActiveElements() &&
+        chart.tooltip?.getActiveElements().length > 0 &&
+        chart_type === "line"
+      ) {
+        let activePoint = chart.tooltip.getActiveElements()[0];
+        let ctx = chart.ctx;
+        let x_axis = chart.scales.x;
+        let y_axis = chart.scales.y;
+
+        let x = activePoint.element.tooltipPosition().x;
+
+        let topY = y_axis.top;
+        let bottomY = chart.chartArea.bottom;
+
+        // draw line
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x, topY + 7);
+        ctx.lineTo(x, bottomY + 1);
+        ctx.setLineDash([2, 3]);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#555";
+        ctx.stroke();
+        ctx.restore();
+      }
+    },
+  }
 );
 
 const App: React.FC = () => {
-  const [darkmode, setDarkmode] = useState(
-    localStorage.getItem("darkmode") === "true"
+  const darkmode = localStorage.getItem("darkmode") === "true";
+
+  const [XIndex, setXIndex] = useState(0);
+
+  const throttledHover = useMemo(
+    () =>
+      throttle((event, elements, chart) => {
+        console.log("asdf");
+        let activePoint = chart.tooltip?.getActiveElements()[0];
+        let x = (activePoint?.index ?? 0) / 2;
+        setXIndex(x);
+      }, 240),
+    []
   );
 
   const [S, setS] = useState(500);
@@ -41,30 +85,37 @@ const App: React.FC = () => {
   const i = I / (S + I + R) || 0;
   const r = R / (S + I + R) || 0;
 
-  const datas = [[s, i, r]];
+  const susceptibleData = [s];
+  const infectedData = [i];
+  const recoveredData = [r];
 
   for (let i = 0; i < loop; i++) {
-    const dS = beta * datas[i][0] * datas[i][1];
-    const dR = gamma * datas[i][1];
+    const dS = beta * susceptibleData[i] * infectedData[i];
+    const dR = gamma * infectedData[i];
 
-    const s_ = datas[i][0] - dS * ra;
-    const i_ = datas[i][1] + (dS - dR) * ra;
-    const r_ = datas[i][2] + dR * ra;
+    const s_ = susceptibleData[i] - dS * ra;
+    const i_ = infectedData[i] + (dS - dR) * ra;
+    const r_ = recoveredData[i] + dR * ra;
 
-    datas.push([s_, i_, r_]);
+    susceptibleData.push(s_);
+    infectedData.push(i_);
+    recoveredData.push(r_);
   }
+
+  const sNow = susceptibleData[Math.round(XIndex)];
+  const iNow = infectedData[Math.round(XIndex)];
+  const rNow = recoveredData[Math.round(XIndex)];
 
   return (
     <div
       style={{
-        position: "relative",
         backgroundColor: darkmode ? "#171a1f" : undefined,
         fontFamily: "NanumSquare",
         color: darkmode ? "white" : undefined,
       }}
     >
       <Navibar />
-      <Container fluid style={{ minHeight: "95vh" }}>
+      <Container fluid style={{ minHeight: "85vh" }}>
         <Row className="mt-3 text-center">
           <h3 className="m-0 fw-bold">전염병 확산 예측 모델 모의실험</h3>
         </Row>
@@ -275,7 +326,7 @@ const App: React.FC = () => {
                     radius: 0,
                   },
                   line: {
-                    tension: 1,
+                    tension: 0.1,
                   },
                 },
                 scales: {
@@ -286,19 +337,37 @@ const App: React.FC = () => {
                     },
                   },
                 },
-                onClick: (event, activeElements, chart) => {
-                  console.log(activeElements[0].index / 2);
+                onHover: throttledHover,
+                interaction: {
+                  mode: "nearest",
+                  intersect: false,
+                },
+                plugins: {
+                  tooltip: {
+                    mode: "index",
+                    intersect: false,
+                  },
+                },
+                hover: {
+                  mode: "nearest",
+                  intersect: true,
                 },
               }}
               data={{
                 labels: Array.from(
-                  { length: datas.length },
+                  {
+                    length: Math.max(
+                      susceptibleData.length,
+                      infectedData.length,
+                      recoveredData.length
+                    ),
+                  },
                   (_, i) => Math.round(i * ra * 100) / 100
                 ),
                 datasets: [
                   {
                     label: "취약군",
-                    data: datas.map((d) => d[0]),
+                    data: susceptibleData,
                     backgroundColor: "rgba(255, 159, 64, 0.2)",
                     borderColor: "rgba(255, 159, 64, 1)",
                     borderWidth: 5,
@@ -306,7 +375,7 @@ const App: React.FC = () => {
                   },
                   {
                     label: "감염군",
-                    data: datas.map((d) => d[1]),
+                    data: infectedData,
                     backgroundColor: "rgba(255, 99, 132, 0.2)",
                     borderColor: "rgba(255, 99, 132, 1)",
                     borderWidth: 5,
@@ -314,7 +383,7 @@ const App: React.FC = () => {
                   },
                   {
                     label: "회복군",
-                    data: datas.map((d) => d[2]),
+                    data: recoveredData,
                     backgroundColor: "rgba(75, 192, 192, 0.2)",
                     borderColor: "rgba(75, 192, 192, 1)",
                     borderWidth: 5,
@@ -339,11 +408,7 @@ const App: React.FC = () => {
                           className="fw-bold"
                           style={{ fontSize: 18 }}
                         >
-                          시간 간격 (
-                          <b>
-                            <i>r </i>
-                          </b>
-                          )
+                          시간 간격
                         </Form.Label>
                         <div>
                           <Form.Text>
@@ -375,11 +440,7 @@ const App: React.FC = () => {
                           className="fw-bold"
                           style={{ fontSize: 18 }}
                         >
-                          반복 횟수 (
-                          <b>
-                            <i>l </i>
-                          </b>
-                          )
+                          반복 횟수
                         </Form.Label>
                         <div>
                           <Form.Text>
@@ -417,6 +478,66 @@ const App: React.FC = () => {
               <Card.Header as="h5">결괏값 | Results</Card.Header>
               <Card.Body className="pt-3 pb-0">
                 <Form>
+                  <h6>현재 시간 (t)</h6>
+                  <Form.Group className="mb-3">
+                    <ProgressBar
+                      now={XIndex}
+                      label={XIndex}
+                      max={ra * loop}
+                      animated
+                      variant="secondary"
+                    />
+                  </Form.Group>
+
+                  <h6>현재 개체군 구성 비율</h6>
+                  <Form.Group>
+                    <Col>
+                      {sNow + iNow + rNow > 0 ? (
+                        <ProgressBar>
+                          <ProgressBar
+                            variant="warning"
+                            now={sNow * 100}
+                            key={1}
+                            label="취약군"
+                            className="text-black"
+                          />
+                          <ProgressBar
+                            variant="danger"
+                            now={iNow * 100}
+                            key={2}
+                            label="감염군"
+                          />
+                          <ProgressBar
+                            variant="success"
+                            now={rNow * 100}
+                            key={3}
+                            label="회복군"
+                          />
+                        </ProgressBar>
+                      ) : (
+                        <ProgressBar
+                          now={100}
+                          label="변수를 먼저 입력하세요"
+                          variant="dark"
+                        />
+                      )}
+
+                      <div className="pt-2">
+                        <span style={{ color: "orange" }}>
+                          취약군: {Math.round(s * 100 * 10) / 10 || 0}%
+                        </span>{" "}
+                        |{" "}
+                        <span className="text-danger">
+                          감염군: {Math.round(i * 100 * 10) / 10 || 0}%
+                        </span>{" "}
+                        |{" "}
+                        <span className="text-success">
+                          회복군: {Math.round(r * 100 * 10) / 10 || 0}%
+                        </span>
+                      </div>
+                    </Col>
+                  </Form.Group>
+                  <hr />
                   <Form.Group as={Row} className="mb-3">
                     <Col sm={9}>
                       <Form.Label className="fw-bold" style={{ fontSize: 18 }}>
@@ -434,7 +555,7 @@ const App: React.FC = () => {
                     </Col>
                     <Col sm={3} className="ms-auto d-flex align-items-center">
                       <h5 className="fw-bold">
-                        {Math.round(beta * i * 1000) / 1000}
+                        {Math.round(beta * iNow * 1000) / 1000}
                       </h5>
                     </Col>
                   </Form.Group>
@@ -455,7 +576,7 @@ const App: React.FC = () => {
                     </Col>
                     <Col sm={3} className="ms-auto d-flex align-items-center">
                       <h5 className="fw-bold">
-                        {Math.round(-1 * beta * s * i * 1000) / 1000}
+                        {Math.round(-1 * beta * sNow * iNow * 1000) / 1000}
                       </h5>
                     </Col>
                   </Form.Group>
@@ -477,7 +598,9 @@ const App: React.FC = () => {
                     </Col>
                     <Col sm={3} className="ms-auto d-flex align-items-center">
                       <h5 className="fw-bold">
-                        {Math.round((beta * s * i - gamma * i) * 1000) / 1000}
+                        {Math.round(
+                          (beta * sNow * iNow - gamma * iNow) * 1000
+                        ) / 1000}
                       </h5>
                     </Col>
                   </Form.Group>
@@ -498,7 +621,7 @@ const App: React.FC = () => {
                     </Col>
                     <Col sm={3} className="ms-auto d-flex align-items-center">
                       <h5 className="fw-bold">
-                        {Math.round(gamma * i * 1000) / 1000}
+                        {Math.round(gamma * iNow * 1000) / 1000}
                       </h5>
                     </Col>
                   </Form.Group>
@@ -522,7 +645,7 @@ const App: React.FC = () => {
                     <Col sm={3} className="ms-auto d-flex align-items-center">
                       <h5 className="fw-bold">
                         {gamma > 0
-                          ? Math.round(((beta * s) / gamma) * 1000) / 1000 ||
+                          ? Math.round(((beta * sNow) / gamma) * 1000) / 1000 ||
                             "-"
                           : "∞"}
                       </h5>

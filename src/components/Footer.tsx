@@ -1,20 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import { Container, Col, Row, Button } from "react-bootstrap";
 
 const Footer: React.FC = () => {
-  const [darkmode, setDarkmode] = useState(
-    localStorage.getItem("darkmode") === "true"
-  );
+  const darkmode = localStorage.getItem("darkmode") === "true";
 
   return (
-    <footer
-      className="bg-dark text-white"
-      style={{
-        position: "absolute",
-        bottom: 0,
-        width: "100%",
-      }}
-    >
+    <footer className="bg-dark text-white">
       <Container fluid="sm" className="text-center text-md-start py-4">
         <Row>
           <Col xs={5} className="mt-md-0 mt-3">
@@ -41,7 +32,9 @@ const Footer: React.FC = () => {
             </Button>
           </Col>
         </Row>
-        <div className="text-center">Copyright © 2022 ArpaAP All rights reserved.</div>
+        <div className="text-center">
+          Copyright © 2022 ArpaAP All rights reserved.
+        </div>
       </Container>
     </footer>
   );
