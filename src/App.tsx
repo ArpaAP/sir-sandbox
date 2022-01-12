@@ -524,15 +524,15 @@ const App: React.FC = () => {
 
                       <div className="pt-2">
                         <span style={{ color: "orange" }}>
-                          취약군: {Math.round(s * 100 * 10) / 10 || 0}%
+                          취약군: {Math.round(sNow * 100 * 10) / 10 || 0}%
                         </span>{" "}
                         |{" "}
                         <span className="text-danger">
-                          감염군: {Math.round(i * 100 * 10) / 10 || 0}%
+                          감염군: {Math.round(iNow * 100 * 10) / 10 || 0}%
                         </span>{" "}
                         |{" "}
                         <span className="text-success">
-                          회복군: {Math.round(r * 100 * 10) / 10 || 0}%
+                          회복군: {Math.round(rNow * 100 * 10) / 10 || 0}%
                         </span>
                       </div>
                     </Col>
