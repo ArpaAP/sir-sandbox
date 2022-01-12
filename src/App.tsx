@@ -102,9 +102,9 @@ const App: React.FC = () => {
     recoveredData.push(r_);
   }
 
-  const sNow = susceptibleData[Math.round(XIndex)];
-  const iNow = infectedData[Math.round(XIndex)];
-  const rNow = recoveredData[Math.round(XIndex)];
+  const sNow = susceptibleData[Math.round(XIndex * 2)];
+  const iNow = infectedData[Math.round(XIndex * 2)];
+  const rNow = recoveredData[Math.round(XIndex * 2)];
 
   return (
     <div
