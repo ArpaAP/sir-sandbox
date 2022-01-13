@@ -267,7 +267,7 @@ const App: React.FC = () => {
                     <Col sm={4} md={3} className="ms-auto">
                       <Form.Control
                         type="number"
-                        step="0.1"
+                        step="0.01"
                         value={gamma.toString()}
                         onChange={(e) =>
                           setGamma(Math.max(Number(e.target.value), 0))
