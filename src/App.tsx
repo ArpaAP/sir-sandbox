@@ -232,7 +232,7 @@ const App: React.FC = () => {
                       </Form.Label>
                       <div>
                         <Form.Text>
-                          감염이 얼마나 효과적(빠르게)으로 일어나는지
+                          감염이 얼마나 효과적으로(빠르게) 일어나는지
                           결정합니다. 평균 접촉 시간의 역수입니다.
                         </Form.Text>
                       </div>
@@ -269,9 +269,12 @@ const App: React.FC = () => {
                         type="number"
                         step="0.01"
                         value={gamma.toString()}
-                        onChange={(e) =>
-                          setGamma(Math.max(Number(e.target.value), 0))
-                        }
+                        onChange={(e) => {
+                          console.log(e.target.value);
+                          if (isFinite(Number(e.target.value))) {
+                            setGamma(Math.max(Number(e.target.value), 0));
+                          }
+                        }}
                       />
                     </Col>
                   </Form.Group>
